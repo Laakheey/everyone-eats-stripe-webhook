@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const bodyParser = require('body-parser');
 require("dotenv").config();
 
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const stripe = require("stripe")(process.env.STRIPE_PUBLISHABLE_KEY);
 
 app.use(
   bodyParser.json({
@@ -38,8 +38,8 @@ app.post(
     console.log("Webhook API called");
     console.log("request.rawBody", request.rawBody);
     console.log(
-      "🚀 ~ process.env.STRIPE_SECRET_KEY:",
-      process.env.STRIPE_SECRET_KEY
+      "🚀 ~ process.env.STRIPE_PUBLISHABLE_KEY:",
+      process.env.STRIPE_PUBLISHABLE_KEY
     );
     console.log(
       "🚀 ~ process.env.END_POINT_SECRET_2:",
