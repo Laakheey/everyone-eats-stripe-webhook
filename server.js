@@ -13,13 +13,13 @@
 
 // The library needs to be configured with your account's secret key.
 // Ensure the key is kept out of any version control system you might be using.
-const stripe = require('stripe')('sk_test_51PVDKBChcmYHyL69dgNOyILnPVU56568s0jU1mIT1TUAW20OQEgYG7Cg99gC4WlWoO0pN6mERMxAgiIzEUD7783g00xT94EuN0');
+const stripe = require('stripe')(process.env.STRIPE_PUBLISHABLE_KEY);
 const express = require('express');
 const app = express();
 const Payments = require('./paymentDB');
 
 
-const endpointSecret = "whsec_df8b1affad84574930077d48237fe077608fdaecc909e6eb3b73da28e2d81bbe";
+const endpointSecret = process.env.END_POINT_SECRET;
 
 app.get('/', (req, res) => {
     return res.json({msg: 'hello world'});
