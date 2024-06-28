@@ -29,6 +29,8 @@ const endpointSecret = process.env.END_POINT_SECRET;
 
 const PORT = process.env.PORT || 4242;
 
+app.use(express.raw());
+
 app.get("/", (req, res) => {
   return res.json({ msg: "hello world" });
 });
@@ -37,7 +39,9 @@ app.post(
   "/webhook",
   express.raw({ type: "application/json" }),
   async (request, response) => {
-    console.log("Weebhook api called");
+    console.log("Webhook api called");
+    console.log("request.body: ", request.body);
+    // console.log("request.body: ", request?.bodyRaw);
     const sig = request.headers["stripe-signature"];
 
     let event;
