@@ -3,19 +3,20 @@ const express = require("express");
 const app = express();
 const Payments = require("./paymentDB");
 const mongoose = require("mongoose");
-const bodyParser = require('body-parser');
+const bodyParser = require("body-parser");
 
 require("dotenv").configDotenv();
 
-app.use(bodyParser.json({
+app.use(
+  bodyParser.json({
     verify: function (req, res, buf) {
-        var url = req.originalUrl;
-        if (url.startsWith('/webhook')) {
-            req.body = buf.toString()
-        }
-    }
-}));
-
+      var url = req.originalUrl;
+      if (url.startsWith("/webhook")) {
+        req.body = buf.toString();
+      }
+    },
+  })
+);
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -38,34 +39,37 @@ app.post(
   async (request, response) => {
     console.log("Webhook api called");
     console.log("request.body: ", request.body);
-    const sig = request.headers["stripe-signature"];
+    // const sig = request.headers["stripe-signature"];
 
-    let event;
+    // let event;
 
-    try {
-      event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
-    } catch (err) {
-      console.log(
-        `Webhook signature verification failed. Error: ${err.message}`
-      );
-      response.status(400).send(`Webhook Error: ${err.message}`);
-      return;
-    }
+    // try {
+    //   event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
+    // } catch (err) {
+    //   console.log(
+    //     `Webhook signature verification failed. Error: ${err.message}`
+    //   );
+    //   response.status(400).send(`Webhook Error: ${err.message}`);
+    //   return;
+    // }
+    const body = request.body;
 
     let sessionData;
-    switch (event.type) {
+    switch (body.type) {
       case "checkout.session.completed":
-        const checkoutSessionCompleted = event.data.object;
+        const checkoutSessionCompleted = body;
         console.log("checkoutSessionCompleted", checkoutSessionCompleted);
         sessionData = checkoutSessionCompleted;
         break;
       default:
-        console.log(`Unhandled event type ${event.type}`);
+        console.log(`Unhandled event type ${body.type}`);
     }
 
     const data = new Payments({
-      userId: new mongoose.Types.ObjectId("666ee91689a6f624d7f80cfd"),
-      restaurantID: new mongoose.Types.ObjectId("66573f6211cd76caa8c567ef"),
+      userId: new mongoose.Types.ObjectId(sessionData.data.metadata.userId),
+      restaurantID: new mongoose.Types.ObjectId(
+        sessionData.data.metadata.restaurantId
+      ),
       stripeId: sessionData.id,
     });
     await data.save();
