@@ -13,6 +13,7 @@ app.use(
       var url = req.originalUrl;
       if (url.startsWith("/webhook")) {
         req.rawBody = buf.toString();
+        console.log(req.rawBody);
       }
     },
   })
@@ -29,6 +30,8 @@ const PORT = process.env.PORT || 4242;
 app.get("/", (req, res) => {
   return res.json({ msg: "hello world" });
 });
+
+express.raw();
 
 app.post(
   "/webhook",
