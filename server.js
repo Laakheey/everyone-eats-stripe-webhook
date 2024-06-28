@@ -17,9 +17,17 @@ const stripe = require('stripe')(process.env.STRIPE_PUBLISHABLE_KEY);
 const express = require('express');
 const app = express();
 const Payments = require('./paymentDB');
+const mongoose = require('mongoose');
+require('dotenv').configDotenv();
 
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("Connected to Database"))
+  .catch((error) => console.error("MongoDB connection error:", error));
 
 const endpointSecret = process.env.END_POINT_SECRET;
+
+const PORT = process.env.PORT || 4242
 
 app.get('/', (req, res) => {
     return res.json({msg: 'hello world'});
@@ -58,4 +66,4 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (request, re
   response.send();
 });
 
-app.listen(4242, () => console.log('http://localhost:4242'));
+app.listen(PORT, () => console.log('http://localhost:4242'));
