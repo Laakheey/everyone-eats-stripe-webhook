@@ -2,28 +2,37 @@ const express = require("express");
 const app = express();
 const Payments = require("./paymentDB");
 const mongoose = require("mongoose");
-const bodyParser = require('body-parser');
+const bodyParser = require("body-parser");
 require("dotenv").config();
 
 const stripe = require("stripe")(process.env.STRIPE_PUBLISHABLE_KEY);
 
-app.use(
-  bodyParser.json({
-    verify: function (req, res, buf) {
-      var url = req.originalUrl;
-      if (url.startsWith("/webhook")) {
-        req.rawBody = buf.toString();
-      }
-    },
-  })
-);
+// app.use(
+//   bodyParser.json({
+//     verify: function (req, res, buf) {
+//       var url = req.originalUrl;
+//       if (url.startsWith("/webhook")) {
+//         req.rawBody = buf.toString();
+//       }
+//     },
+//   })
+// );
+
+app.use((req, res, next) => {
+  console.log("🚀 ~ app.use ~ originalUrl:", originalUrl);
+  if (req.originalUrl === "/webhook") {
+    next();
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log("Connected to Database"))
   .catch((error) => console.error("MongoDB connection error:", error));
 
-const endpointSecret = process.env.END_POINT_SECRET_2
+const endpointSecret = process.env.END_POINT_SECRET;
 
 const PORT = process.env.PORT || 4242;
 
@@ -33,7 +42,7 @@ app.get("/", (req, res) => {
 
 app.post(
   "/webhook",
-//   express.raw({ type: "application/json" }),
+  express.raw({ type: "application/json" }),
   async (request, response) => {
     console.log("Webhook API called");
     console.log("request.rawBody", request.rawBody);
@@ -42,8 +51,8 @@ app.post(
       process.env.STRIPE_PUBLISHABLE_KEY
     );
     console.log(
-      "🚀 ~ process.env.END_POINT_SECRET_2:",
-      process.env.END_POINT_SECRET_2
+      "🚀 ~ process.env.END_POINT_SECRET:",
+      process.env.END_POINT_SECRET
     );
 
     const sig = request.headers["stripe-signature"];
@@ -53,7 +62,7 @@ app.post(
 
     try {
       event = stripe.webhooks.constructEvent(
-        request.rawBody,
+        request.body,
         sig,
         endpointSecret
       );
@@ -62,7 +71,7 @@ app.post(
         `Webhook signature verification failed. Error: ${err.message}`
       );
       response.status(400).send(`Webhook Error: ${err.message}`);
-      return;   
+      return;
     }
 
     let sessionData;
