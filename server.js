@@ -1,24 +1,21 @@
-// server.js
-//
-// Use this sample code to handle webhook events in your integration.
-//
-// 1) Paste this code into a new file (server.js)
-//
-// 2) Install dependencies
-//   npm install stripe
-//   npm install express
-//
-// 3) Run the server on http://localhost:4242
-//   node server.js
-
-// The library needs to be configured with your account's secret key.
-// Ensure the key is kept out of any version control system you might be using.
 const stripe = require("stripe")(process.env.STRIPE_PUBLISHABLE_KEY);
 const express = require("express");
 const app = express();
 const Payments = require("./paymentDB");
 const mongoose = require("mongoose");
+const bodyParser = require('body-parser');
+
 require("dotenv").configDotenv();
+
+app.use(bodyParser.json({
+    verify: function (req, res, buf) {
+        var url = req.originalUrl;
+        if (url.startsWith('/webhook')) {
+            req.rawBody = buf.toString()
+        }
+    }
+}));
+
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -29,7 +26,7 @@ const endpointSecret = process.env.END_POINT_SECRET;
 
 const PORT = process.env.PORT || 4242;
 
-app.use(express.raw());
+// app.use(express.raw());
 
 app.get("/", (req, res) => {
   return res.json({ msg: "hello world" });
