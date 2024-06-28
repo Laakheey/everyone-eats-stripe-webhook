@@ -23,11 +23,15 @@ mongoose
   .then(() => console.log("Connected to Database"))
   .catch((error) => console.error("MongoDB connection error:", error));
 
-const endpointSecret = process.env.END_POINT_SECRET;
+const endpointSecret = process.env.END_POINT_SECRET || '';
 
 const PORT = process.env.PORT || 4242;
 
 // app.use(express.raw());
+app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 
 app.get("/", (req, res) => {
   return res.json({ msg: "hello world" });
@@ -42,10 +46,12 @@ app.post(
 
     const sig = request.headers["stripe-signature"];
 
+    console.log("sig: ", sig);
+    
     let event;
 
     try {
-      event = stripe.webhooks.constructEvent(request.rawBody, sig);
+      event = stripe.webhooks.constructEvent(request.rawBody, sig, endpointSecret);
     } catch (err) {
       console.log(
         `Webhook signature verification failed. Error: ${err.message}`
