@@ -1,11 +1,11 @@
-const stripe = require("stripe")(process.env.STRIPE_PUBLISHABLE_KEY);
 const express = require("express");
 const app = express();
 const Payments = require("./paymentDB");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-
 require("dotenv").configDotenv();
+
+const stripe = require("stripe")(process.env.STRIPE_PUBLISHABLE_KEY);
 
 app.use(
   bodyParser.json({
@@ -24,14 +24,7 @@ mongoose
   .catch((error) => console.error("MongoDB connection error:", error));
 
 const endpointSecret = process.env.END_POINT_SECRET || '';
-
 const PORT = process.env.PORT || 4242;
-
-// app.use(express.raw());
-app.use(express.json());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
 
 app.get("/", (req, res) => {
   return res.json({ msg: "hello world" });
@@ -41,21 +34,17 @@ app.post(
   "/webhook",
   express.raw({ type: "application/json" }),
   async (request, response) => {
-    console.log("Webhook api called");
-    console.log("request.rawBody: ", request.rawBody);
+    console.log("Webhook API called");
 
     const sig = request.headers["stripe-signature"];
-
     console.log("sig: ", sig);
-    
+
     let event;
 
     try {
       event = stripe.webhooks.constructEvent(request.rawBody, sig, endpointSecret);
     } catch (err) {
-      console.log(
-        `Webhook signature verification failed. Error: ${err.message}`
-      );
+      console.log(`Webhook signature verification failed. Error: ${err.message}`);
       response.status(400).send(`Webhook Error: ${err.message}`);
       return;
     }
@@ -69,6 +58,8 @@ app.post(
         break;
       default:
         console.log(`Unhandled event type ${event.type}`);
+        response.status(400).send(`Unhandled event type ${event.type}`);
+        return;
     }
 
     const data = new Payments({
@@ -76,10 +67,15 @@ app.post(
       restaurantID: new mongoose.Types.ObjectId("66573f6211cd76caa8c567ef"),
       stripeId: sessionData.id,
     });
-    await data.save();
 
-    response.send();
+    try {
+      await data.save();
+      response.status(200).send();
+    } catch (error) {
+      console.error("Error saving payment data:", error);
+      response.status(500).send("Internal Server Error");
+    }
   }
 );
 
-app.listen(PORT, () => console.log("http://localhost:4242"));
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
