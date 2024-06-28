@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 require("dotenv").configDotenv();
 
-const stripe = require("stripe")(process.env.STRIPE_PUBLISHABLE_KEY);
+const stripe = require("stripe")(process.env.PUBLISHABLE_STRIPE_PUBLISHABLE_KEY);
 app.use(
   bodyParser.json({
     verify: function (req, res, buf) {
