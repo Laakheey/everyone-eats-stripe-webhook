@@ -19,7 +19,7 @@ const stripe = require("stripe")(process.env.STRIPE_PUBLISHABLE_KEY);
 // );
 
 app.use((req, res, next) => {
-  console.log("🚀 ~ app.use ~ originalUrl:", originalUrl);
+  console.log("🚀 ~ app.use ~ req.originalUrl:", req.originalUrl);
   if (req.originalUrl === "/webhook") {
     next();
   } else {
