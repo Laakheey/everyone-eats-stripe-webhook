@@ -12,7 +12,7 @@ app.use(
     verify: function (req, res, buf) {
       var url = req.originalUrl;
       if (url.startsWith("/webhook")) {
-        req.body = buf.toString();
+        req.rawBody = buf.toString();
       }
     },
   })
@@ -38,38 +38,36 @@ app.post(
   express.raw({ type: "application/json" }),
   async (request, response) => {
     console.log("Webhook api called");
-    console.log("request.body: ", request.body);
-    // const sig = request.headers["stripe-signature"];
+    console.log("request.rawBody: ", request.rawBody);
 
-    // let event;
+    const sig = request.headers["stripe-signature"];
 
-    // try {
-    //   event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
-    // } catch (err) {
-    //   console.log(
-    //     `Webhook signature verification failed. Error: ${err.message}`
-    //   );
-    //   response.status(400).send(`Webhook Error: ${err.message}`);
-    //   return;
-    // }
-    const body = request.body;
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(request.rawBody, sig);
+    } catch (err) {
+      console.log(
+        `Webhook signature verification failed. Error: ${err.message}`
+      );
+      response.status(400).send(`Webhook Error: ${err.message}`);
+      return;
+    }
 
     let sessionData;
-    switch (body.type) {
+    switch (event.type) {
       case "checkout.session.completed":
-        const checkoutSessionCompleted = body;
+        const checkoutSessionCompleted = event.data.object;
         console.log("checkoutSessionCompleted", checkoutSessionCompleted);
         sessionData = checkoutSessionCompleted;
         break;
       default:
-        console.log(`Unhandled event type ${body.type}`);
+        console.log(`Unhandled event type ${event.type}`);
     }
 
     const data = new Payments({
-      userId: new mongoose.Types.ObjectId(sessionData.data.metadata.userId),
-      restaurantID: new mongoose.Types.ObjectId(
-        sessionData.data.metadata.restaurantId
-      ),
+      userId: new mongoose.Types.ObjectId("666ee91689a6f624d7f80cfd"),
+      restaurantID: new mongoose.Types.ObjectId("66573f6211cd76caa8c567ef"),
       stripeId: sessionData.id,
     });
     await data.save();
