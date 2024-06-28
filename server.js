@@ -45,7 +45,7 @@ app.post(
   express.raw({ type: "application/json" }),
   async (request, response) => {
     console.log("Webhook API called");
-    console.log("request.rawBody", request.rawBody);
+    console.log("request.body", request.body);
     console.log(
       "🚀 ~ process.env.STRIPE_PUBLISHABLE_KEY:",
       process.env.STRIPE_PUBLISHABLE_KEY
