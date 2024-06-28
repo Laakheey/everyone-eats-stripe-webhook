@@ -6,14 +6,15 @@ const bodyParser = require("body-parser");
 require("dotenv").configDotenv();
 
 const stripe = require("stripe")(process.env.STRIPE_PUBLISHABLE_KEY);
-
 app.use(
   bodyParser.json({
     verify: function (req, res, buf) {
       var url = req.originalUrl;
       if (url.startsWith("/webhook")) {
         req.rawBody = buf.toString();
-        console.log(req.rawBody);
+        return true;
+      } else {
+        return false;
       }
     },
   })
@@ -24,30 +25,35 @@ mongoose
   .then(() => console.log("Connected to Database"))
   .catch((error) => console.error("MongoDB connection error:", error));
 
-const endpointSecret = process.env.END_POINT_SECRET || '';
+const endpointSecret = process.env.END_POINT_SECRET || "";
+
 const PORT = process.env.PORT || 4242;
 
 app.get("/", (req, res) => {
   return res.json({ msg: "hello world" });
 });
 
-express.raw();
-
 app.post(
   "/webhook",
   express.raw({ type: "application/json" }),
   async (request, response) => {
     console.log("Webhook API called");
+    console.log("request.rawBody", request.rawBody);
 
     const sig = request.headers["stripe-signature"];
-    console.log("sig: ", sig);
 
     let event;
 
     try {
-      event = stripe.webhooks.constructEvent(request.rawBody, sig, endpointSecret);
+      event = stripe.webhooks.constructEvent(
+        request.rawBody,
+        sig,
+        endpointSecret
+      );
     } catch (err) {
-      console.log(`Webhook signature verification failed. Error: ${err.message}`);
+      console.log(
+        `Webhook signature verification failed. Error: ${err.message}`
+      );
       response.status(400).send(`Webhook Error: ${err.message}`);
       return;
     }
@@ -81,4 +87,6 @@ app.post(
   }
 );
 
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () =>
+  console.log(`Server running on http://localhost:${PORT}`)
+);
