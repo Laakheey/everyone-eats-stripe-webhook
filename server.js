@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
 
 app.post(
   "/webhook",
-  express.raw({ type: "application/json" }),
+//   express.raw({ type: "application/json" }),
   async (request, response) => {
     console.log("Webhook API called");
     console.log("request.rawBody", request.rawBody);
