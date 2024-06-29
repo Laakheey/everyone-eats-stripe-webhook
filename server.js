@@ -24,15 +24,6 @@ app.post(
   express.raw({ type: "application/json" }),
   async (request, response) => {
     console.log("Webhook API called");
-    console.log("request.body", request.body);
-    console.log(
-      "🚀 ~ process.env.STRIPE_PUBLISHABLE_KEY:",
-      process.env.STRIPE_PUBLISHABLE_KEY
-    );
-    console.log(
-      "🚀 ~ process.env.END_POINT_SECRET:",
-      process.env.END_POINT_SECRET
-    );
 
     const body = request.body;
 
@@ -61,7 +52,6 @@ app.post(
     switch (event.type) {
       case "checkout.session.completed":
         const checkoutSessionCompleted = event.data.object;
-        console.log("checkoutSessionCompleted", checkoutSessionCompleted);
         sessionData = checkoutSessionCompleted;
         break;
       default:
