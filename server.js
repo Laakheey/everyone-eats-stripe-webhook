@@ -2,30 +2,9 @@ const express = require("express");
 const app = express();
 const Payments = require("./paymentDB");
 const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
 require("dotenv").config();
 
 const stripe = require("stripe")(process.env.STRIPE_PUBLISHABLE_KEY);
-
-// app.use(
-//   bodyParser.json({
-//     verify: function (req, res, buf) {
-//       var url = req.originalUrl;
-//       if (url.startsWith("/webhook")) {
-//         req.rawBody = buf.toString();
-//       }
-//     },
-//   })
-// );
-
-app.use((req, res, next) => {
-  console.log("🚀 ~ app.use ~ req.originalUrl:", req.originalUrl);
-  if (req.originalUrl === "/webhook") {
-    next();
-  } else {
-    express.json()(req, res, next);
-  }
-});
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -54,6 +33,10 @@ app.post(
       "🚀 ~ process.env.END_POINT_SECRET:",
       process.env.END_POINT_SECRET
     );
+
+    const body = request.body;
+
+    console.log("🚀 ~ body:", body)
 
     const sig = request.headers["stripe-signature"];
     console.log("sig: ", sig);
@@ -88,9 +71,9 @@ app.post(
     }
 
     const data = new Payments({
-      userId: new mongoose.Types.ObjectId("666ee91689a6f624d7f80cfd"),
-      restaurantID: new mongoose.Types.ObjectId("66573f6211cd76caa8c567ef"),
-      stripeId: sessionData.id,
+      userId: new mongoose.Types.ObjectId(sessionData.metadata.userId),
+      restaurantID: new mongoose.Types.ObjectId(sessionData.metadata.restaurantId),
+      stripeId: sessionData.payment_intent,
     });
 
     try {
