@@ -67,6 +67,8 @@ app.post(
       orderId: sessionData.metadata.orderId
     });
 
+    console.log("sessionData", sessionData);
+
     try {
       await data.save();
       response.status(200).send();
