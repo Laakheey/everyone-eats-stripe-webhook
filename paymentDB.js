@@ -13,6 +13,7 @@ const paymentSchema = new mongoose.Schema({
   },
   createdAt: { type: Date, default: Date.now },
   stripeId: { type: String, required: true },
+  orderId: { type: String, required: true}
 });
 
 const Payments = mongoose.model("Payment", paymentSchema);

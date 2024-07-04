@@ -64,6 +64,7 @@ app.post(
       userId: new mongoose.Types.ObjectId(sessionData.metadata.userId),
       restaurantID: new mongoose.Types.ObjectId(sessionData.metadata.restaurantId),
       stripeId: sessionData.payment_intent,
+      orderId: sessionData.metadata.orderId
     });
 
     try {
